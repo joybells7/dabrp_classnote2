@@ -111,8 +111,8 @@ str(tran)
 ## set Mysql with google cloud
 
 # user<-"root"
-# pw<-"XXXXXXXXXXXXXXXX"
-# host<-'XXX.XXX.XXX.XXX'
+# pw<-"manager"
+# host<-'104.198.119.91'
 
 # save(user,pw,host,file ="./gsql.RData")
 
@@ -123,7 +123,7 @@ con <- dbConnect(MySQL(),
                  user = user,
                  password = pw,
                  host = host,
-                 dbname = "recom")
+                 dbname = "test")
 dbListTables(conn = con)
 dbWriteTable(conn = con, name = 'tran', value = "./recomen/tran.csv")
 dbReadTable(conn = con, name = "Test")

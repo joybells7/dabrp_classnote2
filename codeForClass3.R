@@ -56,37 +56,38 @@ dbGetQuery(con, "select * from flights where arr_delay > 120 or dep_delay > 120"
 dbGetQuery(con, "select * from flights as a inner join planes as b on a.tailnum = b.tailnum")
 
 
-library(tidyverse)
+library(tidyverse)    #tidyr 관련 패키지 모두 받기 
 
 # data
 flights
 
 # filter like where
-filter(flights, month == 1, day == 1)
+filter(flights, month == 1, day == 1)    #filter만 ,가 and조건으로 인식함 
+# consle창에서 ==>>>  dec25 %>% summary()
 jan1 <- filter(flights, month == 1, day == 1)
 (dec25 <- filter(flights, month == 12, day == 25))
 
-filter(flights, month == 11 | month == 12)
-nov_dec <- filter(flights, month %in% c(11, 12))
-filter(flights, !(arr_delay > 120 | dep_delay > 120))
+filter(flights, month == 11 | month == 12)             # |는 or
+nov_dec <- filter(flights, month %in% c(11, 12))       # in 연산자 
+filter(flights, !(arr_delay > 120 | dep_delay > 120))  # !는 부정
 filter(flights, arr_delay <= 120, dep_delay <= 120)
 
-# arrange like order by
+# arrange like order by (정렬)
 arrange(flights, year, month, day)
-arrange(flights, desc(arr_delay))
+arrange(flights, desc(arr_delay))   #내림차순 
 
-# test NA|
+# test NA|  ==> NA가 맨 아래로 감 
 df <- tibble(x = c(5, 2, NA))
 arrange(df, x)
 arrange(df, desc(x))
 
-# select like select
+# select like select (helper functions for select 참고...)
 select(flights, year, month, day)
-select(flights, year:day)
-select(flights, -(year:day))
+select(flights, year:day)    # :는 숫자백터 만드는 문법임. year부터 day까지 (콘솔창에서 1:10 해보기)
+select(flights, -(year:day)) # -는 그컬럼 빼고 나머지
 
 rename(flights, tail_num = tailnum)
-select(flights, time_hour, air_time, everything())
+select(flights, time_hour, air_time, everything()) #everything (처음꺼빼고 나머지다????)
 
 # ends_with with select
 flights_sml <- select(flights, 
@@ -95,6 +96,8 @@ flights_sml <- select(flights,
                       distance, 
                       air_time
 )
+
+# console창에서 => names(flights_sml)
 
 # mutate make new columns using calculate others
 mutate(flights_sml,
@@ -105,10 +108,10 @@ mutate(flights_sml,
 mutate(flights_sml,
        gain = arr_delay - dep_delay,
        hours = air_time / 60,
-       gain_per_hour = gain / hours
+       gain_per_hour = gain / hours    #mutate함수는 그속안에 썼던 변수를 다시 쓸수있음 
 )
 
-# only get new columns
+# only get new columns ==> 계산된 컬럼만 있으면 됨
 transmute(flights,
           gain = arr_delay - dep_delay,
           hours = air_time / 60,
@@ -127,6 +130,8 @@ summarise(flights, delay = mean(dep_delay, na.rm = TRUE))
 # group_by 
 by_day <- group_by(flights, year, month, day)
 class(by_day)
+class(flights)
+by_day
 summarise(by_day, delay = mean(dep_delay, na.rm = TRUE))
 
 daily <- group_by(flights, year, month, day)
@@ -134,10 +139,18 @@ daily <- group_by(flights, year, month, day)
 (per_month <- summarise(per_day, flights = sum(flights)))
 (per_year  <- summarise(per_month, flights = sum(flights)))
 
-# ungroup
+# ungroup ==> 그룹해제 
+ungroup(daily)   # ==> daily %>% ungroup()
 daily %>% 
   ungroup() %>% 
   summarise(flights = n())
+
+summarise(group_by(flights, year, month,day),
+          delay=mean(dep_delay, na.rm=TRUE))
+
+flights %>%
+  group_by(year, month, day) %>%
+  summarise(delay=mean(dep_delay, na.rm=TRUE))
 
 # with pipe
 flights_sml %>% 
@@ -160,7 +173,7 @@ popular_dests %>%
 table1
 table2
 table3
-table4a
+table4a  #컬럼값 확인하기 
 table4b
 
 # case of column name is value
@@ -175,7 +188,7 @@ spread(table2, key = type, value = count)
 # separate columns
 table3
 table3 %>% 
-  separate(rate, into = c("cases", "population"))
+  separate(rate, into = c("cases", "population"))  #console창에서 ?separate 해보기 ==> help
 
 # separate columns with class set
 table3 %>% 
@@ -183,11 +196,11 @@ table3 %>%
 
 # separate int columns
 table3 %>% 
-  separate(year, into = c("century", "year"), sep = 2)
+  separate(year, into = c("century", "year"), sep = 2)  #쪼개기
 
 # unite two columns to new column
 table5 %>% 
-  unite(new, century, year)
+  unite(new, century, year)   #합치기 
 
 # unite two columns to new column controll to sep characters
 table5 %>% 
@@ -209,7 +222,7 @@ flights2 %>%
 # left join with dplyr without join function
 flights2 %>%
   select(-origin, -dest) %>% 
-  mutate(name = airlines$name[match(carrier, airlines$carrier)])
+  mutate(name = airlines$name[match(carrier, airlines$carrier)])  #left조인과 동일함 
 
 # join without key
 flights2 %>% 
@@ -231,7 +244,7 @@ flights2 %>%
   left_join(airports, c("origin" = "faa"))
 
 
-## dplyr with db
+## dplyr with db (DB연결하여 사용하기)
 library(dplyr)
 library(RSQLite)
 
@@ -248,12 +261,12 @@ iris_db %>% filter(mpg > 20)
 sql_db = src_mysql(dbname="bank",user = "root",password = "XXXX")
 sql_db
 
-src_bigquery
+src_bigquery  #src-bigquery : 빅쿼리에서 제공함
 
 
 # data.table
 
-library(data.table)
+library(data.table)  #일반적으로는 dataframe을 많이씀. db like 하게 설계된게 data.table.
 
 # get data
 
@@ -281,7 +294,8 @@ head(ans)
 
 # select column like select
 ans <- flights[, arr_delay]
-head(ans)
+head(ans)   #참고 : 티블 
+#콘솔창에서  class(flights)
 
 # select columns like select
 ans <- flights[, .(arr_delay, dep_delay)]
@@ -299,7 +313,7 @@ flights[origin == "JFK" & month == 6L,
 flights[origin == "JFK" & month == 6L, length(dest)]
 
 # make count table 
-flights[, .(.N), by = .(origin)]
+flights[, .(.N), by = .(origin)]  #.N => count세는 함수 
 
 # make count table with condition
 flights[carrier == "AA", .N, by = origin]
@@ -308,5 +322,6 @@ flights[carrier == "AA", .N, by = origin]
 flights[carrier == "AA", .N, by = .(origin,dest)]
 
 # add options
-flights[carrier == "AA", .N, by = .(origin, dest)][order(origin, -dest)][1:10,]
+flights[carrier == "AA", .N, by = .(origin, dest)][order(origin, -dest)][1:10,] 
+  # => 앞에 만들어진 데이터 테이블이 다음에사용됨
 

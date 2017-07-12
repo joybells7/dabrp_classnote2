@@ -32,7 +32,7 @@ dbListTables(con)
 dbGetQuery(con, "select * from planes limit 10")
 
 # select from where
-dbGetQuery(con, "select * from planes where year > 2000 limit 10")
+dbGetQuery(con, "select * from planes where year > 2000")
 
 # select columns
 dbGetQuery(con, "select year, month, day from flights limit 10")
@@ -76,8 +76,10 @@ filter(flights, arr_delay <= 120, dep_delay <= 120)
 arrange(flights, year, month, day)
 arrange(flights, desc(arr_delay))   #내림차순 
 
+
 # test NA|  ==> NA가 맨 아래로 감 
 df <- tibble(x = c(5, 2, NA))
+
 arrange(df, x)
 arrange(df, desc(x))
 
@@ -157,6 +159,14 @@ flights_sml %>%
   group_by(year, month, day) %>%
   filter(rank(desc(arr_delay)) < 10)
 
+summarise(group_by(flights, year, month, day), 
+          delay = mean(dep_delay, na.rm = TRUE))
+
+flights %>%
+  group_by(year,month,day) %>%
+  summarise(delay=mean(dep_delay, na.rm = TRUE))
+
+
 # assign values
 popular_dests <- flights %>% 
   group_by(dest) %>% 
@@ -177,6 +187,7 @@ table4a  #컬럼값 확인하기
 table4b
 
 # case of column name is value
+
 table4a
 table4a %>% 
   gather(`1999`, `2000`, key = "year", value = "cases")
@@ -248,7 +259,8 @@ flights2 %>%
 library(dplyr)
 library(RSQLite)
 
-sqlite_db = src_sqlite('sqlite_db.sqlite', create = T)
+sqlite_db = src_sqlite('sqlite_db.sqlite', 
+                       create = T)
 copy_to(sqlite_db, mtcars)
 
 src_tbls(sqlite_db)
@@ -308,6 +320,8 @@ head(ans)
 # transmute
 flights[origin == "JFK" & month == 6L,
         .(m_arr = mean(arr_delay), m_dep = mean(dep_delay))]
+
+
 
 # length
 flights[origin == "JFK" & month == 6L, length(dest)]

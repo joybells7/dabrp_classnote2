@@ -14,11 +14,18 @@ if (!require(nycflights13)) install.packages("nycflights13")
 # db set
 library(DBI)
 library(RSQLite)
+library(RMySQL)
 library(nycflights13)
-con <- dbConnect(RSQLite::SQLite(),
+con <- dbConnect(SQLite(),
                  dbname="class3.sqlite")
 
+
+con <- DBI::dbConnect(SQLite(),
+               dbname="class3.sqlite")
+
 # write tables
+
+dbWriteTable(con, "customer", fread("./recomen/customer.csv",encoding = "UTF-8"), overwrite=T)
 dbWriteTable(con, "flights", flights, overwrite=T)
 dbWriteTable(con, "airlines", airlines, overwrite=T)
 dbWriteTable(con, "airports", airports, overwrite=T)
@@ -29,7 +36,8 @@ dbWriteTable(con, "weather", weather, overwrite=T)
 dbListTables(con)
 
 # select from 
-dbGetQuery(con, "select * from planes limit 10")
+dbGetQuery(con, "select * from planes
+           limit 10")
 
 # select from where
 dbGetQuery(con, "select * from planes where year > 2000")
@@ -39,6 +47,7 @@ dbGetQuery(con, "select year, month, day from flights limit 10")
 
 # group by
 dbGetQuery(con, "select type, count(*) from planes group by type")
+dbGetQuery(con, "select type, count(*) as SUM from planes group by type")
 
 # order by 
 dbGetQuery(con, "select type, count(*) from planes group by type order by count(*)")
@@ -55,8 +64,12 @@ dbGetQuery(con, "select * from flights where arr_delay > 120 or dep_delay > 120"
 # inner join
 dbGetQuery(con, "select * from flights as a inner join planes as b on a.tailnum = b.tailnum")
 
+<<<<<<< HEAD
 
 library(tidyverse)    #tidyr 관련 패키지 모두 받기 
+=======
+library(tidyverse)
+>>>>>>> 850aed63263ea3b791a7cd2ea9682d40821f6a4a
 
 # data
 flights
@@ -66,10 +79,17 @@ filter(flights, month == 1, day == 1)    #filter만 ,가 and조건으로 인식�
 # consle창에서 ==>>>  dec25 %>% summary()
 jan1 <- filter(flights, month == 1, day == 1)
 (dec25 <- filter(flights, month == 12, day == 25))
+<<<<<<< HEAD
 
 filter(flights, month == 11 | month == 12)             # |는 or
 nov_dec <- filter(flights, month %in% c(11, 12))       # in 연산자 
 filter(flights, !(arr_delay > 120 | dep_delay > 120))  # !는 부정
+=======
+dec25 %>% summary
+filter(flights, month == 11 | month == 12)
+nov_dec <- filter(flights, month %in% c(11, 12))
+filter(flights, !(arr_delay > 120 | dep_delay > 120))
+>>>>>>> 850aed63263ea3b791a7cd2ea9682d40821f6a4a
 filter(flights, arr_delay <= 120, dep_delay <= 120)
 
 # arrange like order by (정렬)
@@ -85,8 +105,14 @@ arrange(df, desc(x))
 
 # select like select (helper functions for select 참고...)
 select(flights, year, month, day)
+<<<<<<< HEAD
 select(flights, year:day)    # :는 숫자백터 만드는 문법임. year부터 day까지 (콘솔창에서 1:10 해보기)
 select(flights, -(year:day)) # -는 그컬럼 빼고 나머지
+=======
+select(flights, year:day)
+head(flights)
+select(flights, -(year:day))
+>>>>>>> 850aed63263ea3b791a7cd2ea9682d40821f6a4a
 
 rename(flights, tail_num = tailnum)
 select(flights, time_hour, air_time, everything()) #everything (처음꺼빼고 나머지다????)
@@ -98,9 +124,13 @@ flights_sml <- select(flights,
                       distance, 
                       air_time
 )
+<<<<<<< HEAD
 
 # console창에서 => names(flights_sml)
 
+=======
+names(flights_sml)
+>>>>>>> 850aed63263ea3b791a7cd2ea9682d40821f6a4a
 # mutate make new columns using calculate others
 mutate(flights_sml,
        gain = arr_delay - dep_delay,
@@ -133,7 +163,10 @@ summarise(flights, delay = mean(dep_delay, na.rm = TRUE))
 by_day <- group_by(flights, year, month, day)
 class(by_day)
 class(flights)
+<<<<<<< HEAD
 by_day
+=======
+>>>>>>> 850aed63263ea3b791a7cd2ea9682d40821f6a4a
 summarise(by_day, delay = mean(dep_delay, na.rm = TRUE))
 
 daily <- group_by(flights, year, month, day)
@@ -147,17 +180,22 @@ daily %>%
   ungroup() %>% 
   summarise(flights = n())
 
+<<<<<<< HEAD
 summarise(group_by(flights, year, month,day),
           delay=mean(dep_delay, na.rm=TRUE))
 
 flights %>%
   group_by(year, month, day) %>%
   summarise(delay=mean(dep_delay, na.rm=TRUE))
+=======
+ungroup(daily)
+>>>>>>> 850aed63263ea3b791a7cd2ea9682d40821f6a4a
 
 # with pipe
 flights_sml %>% 
   group_by(year, month, day) %>%
   filter(rank(desc(arr_delay)) < 10)
+filter(group_by(flights_sml, year, month, day), rank(desc(arr_delay)) < 10)
 
 summarise(group_by(flights, year, month, day), 
           delay = mean(dep_delay, na.rm = TRUE))
@@ -172,13 +210,14 @@ popular_dests <- flights %>%
   group_by(dest) %>% 
   filter(n() > 365)
 popular_dests
-
+popular_dests <- filter(group_by(flights, dest), n() > 365)
+popular_dests
 
 popular_dests %>% 
   filter(arr_delay > 0) %>% 
   mutate(prop_delay = arr_delay / sum(arr_delay)) %>% 
   select(year:day, dest, arr_delay, prop_delay)
-
+popular_dests
 # tidyr examples
 table1
 table2
@@ -287,10 +326,11 @@ library(data.table)  #일반적으로는 dataframe을 많이씀. db like 하게 
 # download.file(url,destfile = "./data/flights14.csv")
 
 # read data
-system.time(flights <- read.csv("./data/flights14.csv"))
-system.time(flights <- read_csv("./data/flights14.csv"))
-system.time(flights <- fread("./data/flights14.csv"))
+system.time(flights <- read.csv("./data/flights14.csv"))  # to data.frame
+system.time(flights <- read_csv("./data/flights14.csv"))  # to tibble
+system.time(flights <- fread("./data/flights14.csv"))     # to data.table
 flights
+class(flights)
 dim(flights)
 
 # subset like where
@@ -336,6 +376,11 @@ flights[carrier == "AA", .N, by = origin]
 flights[carrier == "AA", .N, by = .(origin,dest)]
 
 # add options
+<<<<<<< HEAD
 flights[carrier == "AA", .N, by = .(origin, dest)][order(origin, -dest)][1:10,] 
   # => 앞에 만들어진 데이터 테이블이 다음에사용됨
 
+=======
+flights[carrier == "AA", .N, by = .(origin, dest)][order(origin, -dest)][1:10,]
+## like pipe %>%      [][][]....[]
+>>>>>>> 850aed63263ea3b791a7cd2ea9682d40821f6a4a

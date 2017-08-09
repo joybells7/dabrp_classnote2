@@ -99,9 +99,10 @@ da[nchar(da)==6 & grepl("^[[:digit:]]*$",da)]<-paste0(da[nchar(da)==6 & grepl("^
 da[nchar(da)==6& grepl("[a-z]$",da)]<-paste0(da[nchar(da)==6& grepl("[a-z]$",da)],"-01")
 da[nchar(da)==6]<-paste0(substr(da[nchar(da)==6],5,6),"-",substr(da[nchar(da)==6],1,3),"-01")
 da[da=="2013-Sep"]<-"2013-Sep-01"
-da <- data.frame(ori=dat,tar=ymd(da))
+da <- data.frame(ori=dat,tar=ymd(da)) #원래테이블과 조인위해 ori, tar컬럼 사용 
 
 swc <- sw %>% left_join(da,by=c(`설치년월`="ori"))
+swc
 swc <- swc[!is.na(swc$tar),]
 
 swc %>%
@@ -147,6 +148,13 @@ tem<-swc %>%
          -c(`설치년월`,
             `설치시도명`,
             `와이파이SSID`))
+
+head(swc %>%
+       select(`설치시도명`,
+              `와이파이SSID`,
+              `설치년월`,
+              sk:etc))
+head(tem)
 
 sum(!is.na(tem$TF))
 
